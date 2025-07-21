@@ -491,8 +491,45 @@ public class DB : DbContext
 }</code></pre>
                     <button class="copy-btn">Copy</button>
                 </div>
+
+                <p class="d-flex align-items-center"><i class="fas fa-user-plus step-icon"></i> Signup ViewModel</p>
+                <div class="position-relative">
+                    <pre><code>public int Id { get; set; }
+
+        //Username Validation
+        [Required(ErrorMessage = "Please enter username")]
+        [Remote(action: "UserNameIsExist", controller: "Account")]
+        public string UserName { get; set; }
+
+        //Email Validation
+        [Required(ErrorMessage = "Please enter email")]
+        [RegularExpression(@"^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$")]
+        public string Email { get; set; }
+
+        //Mobile Number Validation
+        [Required(ErrorMessage = "Please enter Mobile Number")]
+        [Display(Name = "Mobile Number")]
+        [RegularExpression("^([0-9]{10})$", ErrorMessage = "Invalid Mobile Number.")]
+        public long? Mobile { get; set; }
+
+        //Password Validation
+        [Required(ErrorMessage = "Please enter Password")]
+        [RegularExpression("^((?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])|(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^a-zA-Z0-9])|(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[^a-zA-Z0-9])|(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^a-zA-Z0-9])).{8,}$", ErrorMessage = "Passwords must be at least 8 characters and contain at 3 of 4 of the following: upper case (A-Z), lower case (a-z), number (0-9) and special character (e.g. !@#$%^&*)")]
+        public string Password { get; set; }
+
+        //Confirm Password Validation
+        [Required(ErrorMessage = "Please enter Confirm Password")]
+        [Compare("Password", ErrorMessage = "The passwords do not match.")]
+        [Display(Name = "Confirm Password")]
+
+        //IsActive Validation
+        public string ConfirmPassword { get; set; }
+        [Display(Name = "Active")]
+        public bool IsActive { get; set; }</code></pre>
+                    <button class="copy-btn">Copy</button>
+                </div>
                 
-                <p class="d-flex align-items-center"><i class="fas fa-user-plus step-icon"></i> SignUp ViewModel</p>
+                <p class="d-flex align-items-center"><i class="fas fa-user-plus step-icon"></i> Login ViewModel</p>
                 <div class="position-relative">
                     <pre><code>public string Username { get; set; }
 
