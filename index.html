@@ -494,19 +494,12 @@ public class DB : DbContext
                 
                 <p class="d-flex align-items-center"><i class="fas fa-user-plus step-icon"></i> SignUp ViewModel</p>
                 <div class="position-relative">
-                    <pre><code>public class SignUpViewModel {
-    public int Id { get; set; }
-    
-    [Required(ErrorMessage = "Please enter username")]
-    [Remote(action: "UserNameIsExist", controller: "Account")]
-    public string UserName { get; set; }
-    
-    [Required(ErrorMessage = "Please enter email")]
-    [RegularExpression(@"^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$")]
-    public string Email { get; set; }
-    
-    // ... other properties ...
-}</code></pre>
+                    <pre><code>public string Username { get; set; }
+
+        public string Password { get; set; }
+
+        [Display(Name = "Remember Me")]
+        public bool IsRemember { get; set; }</code></pre>
                     <button class="copy-btn">Copy</button>
                 </div>
             </div>
