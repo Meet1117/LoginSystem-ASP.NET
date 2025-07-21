@@ -551,34 +551,152 @@ public class DB : DbContext
             <div class="step-content">
                 <p>Core controller for authentication and user management:</p>
                 <div class="position-relative">
-                    <pre><code>public class AccountController : Controller {
-    private readonly DB context;
-    public AccountController(DB Context) { this.context = Context; }
-
-    public IActionResult SignUp(){
+                    <pre><code>public IActionResult SignUp()
+        {
             return View();
-    }
-
-    [HttpPost]
-    public IActionResult SignUp(SignUpViewModel model) {
-        if (ModelState.IsValid) {
-            var data = new User() {
-                UserName = model.Username,
-                Email = model.Email,
-                Password = model.Password,
-                Mobile = model.Mobile,
-                IsActive = model.IsActive,
-            };
-            context.Users.Add(data);
-            context.SaveChanges();
-            TempData["successMessage"] = "Registration successful!";
-            return RedirectToAction("Login");
         }
-        return View(model);
-    }
-    
-    // ... Login, Logout, and other methods ...
-}</code></pre>
+
+        [HttpPost]
+
+        public IActionResult SignUp(SignUpUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = new Users()
+                {
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    Password = EncryptPassword(model.Password),
+                    Mobile = model.Mobile,
+                    IsActive = model.IsActive,
+                };
+                context.Users.Add(data);
+                context.SaveChanges();
+                TempData["successMessage"] = "You are eligible to login, please type your login credential";
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                TempData["error"] = "Empty form can't be submitted";
+                return View(model);
+            }
+        }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+
+        public IActionResult Login(LoginSignUpViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = context.Users.Where(e => e.UserName == model.Username).SingleOrDefault();
+                if(data != null)
+                {
+                    bool isValid = (data.UserName == model.Username && DecryptPassword(data.Password) == model.Password);
+                    if (isValid)
+                    {
+                        var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, model.Username) },
+                            CookieAuthenticationDefaults.AuthenticationScheme);
+                        var principle = new ClaimsPrincipal(identity);
+                        HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principle);
+                        HttpContext.Session.SetString("Username", model.Username);
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        IActionResult update(Users user)
+                        {
+                            user.UserName = user.UserName;
+                            user.Email = user.Email;
+                            user.Mobile = user.Mobile;
+                            user.IsActive = user.IsActive;
+                            user.LoginAttempt = user.LoginAttempt;
+                            context.Users.Update(user);
+
+                            context.SaveChanges();
+                            return View(user);
+                        }
+                        TempData["errorPassword"] = "Invalid Password";
+                        return View(model);
+                    } 
+                }
+                else
+                {
+                    TempData["errorUsername"] = "username not found!";
+                }
+            }
+            else
+            {
+                return View(model);
+            }
+            return View(model);
+        }
+
+        public IActionResult LogOut()
+        {
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var stroedCookies = Request.Cookies.Keys;
+
+            foreach(var cookies in stroedCookies)
+            {
+                Response.Cookies.Delete(cookies);
+            }
+
+            return RedirectToAction("Login", "Account");
+        }
+
+
+        [AcceptVerbs("Post", "Get")]
+        public IActionResult UserNameIsExist(string userName)
+        {
+            var data = context.Users.Where(x => x.UserName == userName)
+                .SingleOrDefault();
+
+            if (data != null)
+            {
+                return Json($"Username {userName} is already taken.");
+            }
+            else
+            {
+                return Json(true);
+            }
+
+            return View();
+        }
+
+        //Encrypt Passrword
+        public static string EncryptPassword(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+            {
+                return null;
+            }
+            else
+            {
+                byte[] storePasseword = ASCIIEncoding.ASCII.GetBytes(password);
+                string encryptedPassword = Convert.ToBase64String(storePasseword);
+                return encryptedPassword;
+            }
+        }
+
+        //Decrypt Password
+        public static string DecryptPassword(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+            {
+                return null;
+            }
+            else
+            {
+                byte[] storePasseword = Convert.FromBase64String(password);
+                string decryptedPassword = ASCIIEncoding.ASCII.GetString(storePasseword);
+                return decryptedPassword;
+            }
+        }</code></pre>
                     <button class="copy-btn">Copy</button>
                 </div>
             </div>
