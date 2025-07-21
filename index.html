@@ -555,7 +555,9 @@ public class DB : DbContext
     private readonly DB context;
     public AccountController(DB Context) { this.context = Context; }
 
-    public IActionResult SignUp() => View();
+    public IActionResult SignUp(){
+            return View();
+    }
 
     [HttpPost]
     public IActionResult SignUp(SignUpViewModel model) {
